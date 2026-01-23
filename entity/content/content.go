@@ -1,8 +1,15 @@
 package content
 
 type Content struct{
-	ID string
+	LastID string
 	RIndentifer string
 	Actions int
-	Payload string
+}
+
+func NewContent(lastID, rID string) *Content {
+	return &Content{
+		LastID: lastID,
+		RIndentifer: rID,
+		Actions: 0,
+	}
 }
