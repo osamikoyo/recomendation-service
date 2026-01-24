@@ -2,17 +2,21 @@ package core
 
 import (
 	"context"
+	"fmt"
+	"sort"
 	"time"
 
 	"github.com/osamikoyo/recomendation-service/entity/content"
 )
 
 type Repository interface {
-	CreateContent(ctx context.Context, content *content.Content) error
+	CreateContent(ctx context.Context, content *content.Content, lastID string) error
 	CheckConnectionExist(ctx context.Context, rid1, rid2 string) (bool, error)
 	UpdateConnectionValue(ctx context.Context, rid1, rid2 string, value int) error
-	GetConnectionValue(rid1, rid2 string) (int, error)
-	GetNextConnections(rid string) ([]string, error)
+	GetConnectionValue(ctx context.Context, rid1, rid2 string) (int, error)
+	GetNextConnections(ctx context.Context, rid string) ([]string, error)
+	CreateConnection(ctx context.Context, fromRID, toRID string) error
+	CheckContentExistsByRID(ctx context.Context, rid string) (bool, error)
 }
 
 type Core struct {
@@ -26,7 +30,10 @@ func (c *Core) context() (context.Context, context.CancelFunc) {
 }
 
 func (c *Core) GetBestOneForRID(rID string) (string, error) {
-	conns, err := c.repo.GetNextConnections(rID)
+	ctx, cancel := c.context()
+	defer cancel()
+
+	conns, err := c.repo.GetNextConnections(ctx, rID)
 	if err != nil {
 		return "", err
 	}
@@ -34,8 +41,8 @@ func (c *Core) GetBestOneForRID(rID string) (string, error) {
 	if len(conns) == 0 {
 		return rID, nil
 	}
-	
-	if len(conns) == 1{
+
+	if len(conns) == 1 {
 		return conns[0], nil
 	}
 
@@ -43,7 +50,7 @@ func (c *Core) GetBestOneForRID(rID string) (string, error) {
 	bid := ""
 
 	for _, id2 := range conns {
-		value, err := c.repo.GetConnectionValue(rID, id2)
+		value, err := c.repo.GetConnectionValue(ctx, rID, id2)
 		if err != nil {
 			return "", err
 		}
@@ -56,8 +63,45 @@ func (c *Core) GetBestOneForRID(rID string) (string, error) {
 	return bid, nil
 }
 
-func (c *Core) GetOrderedRecsForRID(rID string) ([]*content.Content, error) {
+func (c *Core) GetOrderedRecsForRID(rID string, number ...int) ([]string, error) {
+	ctx, cancel := c.context()
+	defer cancel()
 
+	conns, err := c.repo.GetNextConnections(ctx, rID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(conns) == 0 {
+		return nil, fmt.Errorf("empty conns: %s", rID)
+	}
+
+	if len(conns) == 1 {
+		return conns, nil
+	}
+
+	recs := make(Recs, len(conns))
+
+	for i, id2 := range conns {
+		value, err := c.repo.GetConnectionValue(ctx, rID, id2)
+		if err != nil {
+			return nil, err
+		}
+
+		recs[i] = rec{
+			Value: value,
+			Rid:   id2,
+		}
+	}
+
+	sort.Sort(recs)
+
+	rids := make([]string, len(recs))
+	for i, rec := range recs {
+		rids[i] = rec.Rid
+	}
+
+	return rids, nil
 }
 
 func (c *Core) RouteAction(lastID, rID string) error {
@@ -70,7 +114,7 @@ func (c *Core) RouteAction(lastID, rID string) error {
 	}
 
 	if exist {
-		value, err := c.repo.GetConnectionValue(lastID, rID)
+		value, err := c.repo.GetConnectionValue(ctx, lastID, rID)
 		if err != nil {
 			return err
 		}
@@ -82,12 +126,25 @@ func (c *Core) RouteAction(lastID, rID string) error {
 
 		return nil
 	} else {
-		content := content.NewContent(lastID, rID)
-
-		if err = c.repo.CreateContent(ctx, content); err != nil {
+		cexist, err := c.repo.CheckContentExistsByRID(ctx, rID)
+		if err != nil {
 			return err
 		}
 
-		return nil
+		if cexist {
+			if err = c.repo.CreateConnection(ctx, lastID, rID); err != nil {
+				return err
+			}
+			
+			return nil
+		} else {
+			content := content.NewContent(rID)
+
+			if err = c.repo.CreateContent(ctx, content, lastID); err != nil {
+				return err
+			}
+
+			return nil
+		}
 	}
 }
