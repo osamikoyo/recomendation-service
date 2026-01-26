@@ -96,7 +96,13 @@ func (c *Core) GetOrderedRecsForRID(rID string, number ...int) ([]string, error)
 
 	sort.Sort(recs)
 
-	rids := make([]string, len(recs))
+	var rids []string
+	if len(number) == 0 {
+		rids = make([]string, len(recs))
+	} else {
+		rids = make([]string, number[0])
+	}
+
 	for i, rec := range recs {
 		rids[i] = rec.Rid
 	}
