@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "./api/v1/gen";
+
+message Content{
+    string rid = 1;
+}
+
+service RecomendationService{
+    rpc GetManyRecs (GetManyRecsRequest) returns (GetManyRecsResponse);
+    rpc GetOneRec (GetOneRecRequest) returns (GetOneRecResponse);
+    rpc RouteAction (RouteActionRequest) returns (google.protobuf.Empty);
+}
+
+message GetOneRecRequest{
+    string lastRid = 1;
+}
+
+message GetManyRecsRequest{
+    string lastRid = 1;
+    optional int32 number = 2;
+}
+
+message RouteActionRequest {
+    string lastRid = 1;
+    string currentRid = 2;
+}
+
+message GetManyRecsResponse{
+    repeated string themes = 1;
+}
+
+message GetOneRecResponse{
+    string theme = 1;
+}
+
