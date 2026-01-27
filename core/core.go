@@ -141,7 +141,7 @@ func (c *Core) RouteAction(lastID, rID string) error {
 			if err = c.repo.CreateConnection(ctx, lastID, rID); err != nil {
 				return err
 			}
-			
+
 			return nil
 		} else {
 			content := content.NewContent(rID)
