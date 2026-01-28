@@ -1,8 +1,8 @@
 package core
 
-type rec struct{
+type rec struct {
 	Value int
-	Rid string
+	Rid   string
 }
 
 type Recs []rec
