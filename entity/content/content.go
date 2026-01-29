@@ -1,6 +1,6 @@
 package content
 
-type Content struct{
+type Content struct {
 	RIndentifer string
 }
 
