@@ -19,6 +19,13 @@ type Server struct {
 	core   *core.Core
 }
 
+func NewServer(core *core.Core, logger *logger.Logger) *Server {
+	return &Server{
+		core: core,
+		logger: logger,
+	}
+}
+
 func (s *Server) GetManyRecs(ctx context.Context, req *gen.GetManyRecsRequest) (*gen.GetManyRecsResponse, error) {
 	metrics.RequestTotal.WithLabelValues("GetManyRecs").Inc()
 	then := time.Now()
