@@ -25,6 +25,13 @@ type Core struct {
 	timeout time.Duration
 }
 
+func NewCore(repo Repository, timeout time.Duration) *Core {
+	return &Core{
+		repo: repo,
+		timeout: timeout,
+	}
+}
+
 func (c *Core) context() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), c.timeout)
 }
