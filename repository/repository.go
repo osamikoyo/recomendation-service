@@ -20,6 +20,13 @@ type Repository struct {
 	logger *logger.Logger
 }
 
+func NewRepository(driver neo4j.DriverWithContext, logger *logger.Logger) *Repository {
+	return &Repository{
+		driver: driver,
+		logger: logger,
+	}
+}
+
 func (r *Repository) CreateContent(ctx context.Context, c *content.Content, lastRID string) error {
 	if c == nil || c.RIndentifer == "" {
 		return errors.New("rIdentifier is required")
@@ -236,7 +243,7 @@ func (r *Repository) CreateConnection(ctx context.Context, fromRID, toRID string
 	return err
 }
 
-func (r *Repository) ExistsByRID(ctx context.Context, rid string) (bool, error) {
+func (r *Repository) CheckContentExistsByRID(ctx context.Context, rid string) (bool, error) {
 	if rid == "" {
 		return false, errors.New("rid is required")
 	}
