@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -18,6 +19,7 @@ type Config struct {
 	Addr        string   `mapstructure:"addr"        yaml:"addr"`
 	MetricsAddr string   `mapstructure:"metrics_addr" yaml:"metrics_addr"`
 	DB          DBConfig `mapstructure:"db"          yaml:"db"`
+	Timeout     time.Duration   `mapstructure:"timeout" yaml:"timeout"`
 }
 
 func LoadConfig(path string) (*Config, error) {
@@ -66,5 +68,9 @@ func setDefaults(cfg *Config) {
 	}
 	if cfg.DB.Username == "" {
 		cfg.DB.Username = "neo4j"
+	}
+
+	if cfg.Timeout == 0 {
+		cfg.Timeout = 30 * time.Second
 	}
 }
