@@ -92,16 +92,32 @@ func (a *App) Run(ctx context.Context) error {
 	var wg sync.WaitGroup
 
 	wg.Go(func() {
-		if err := a.server.Serve(lis);err != nil{
+		if err := a.server.Serve(lis); err != nil {
+			a.logger.Error("failed start grpc server",
+				zap.String("addr", a.cfg.Addr),
+				zap.Error(err))
+
 			errors <- err
 		}
 	})
 
 	wg.Go(func() {
-		if err := a.metricsServer.ListenAndServe();err != nil{
+		if err := a.metricsServer.ListenAndServe(); err != nil {
+			a.logger.Error("failed start metrics server",
+				zap.String("metrics_addr", a.cfg.MetricsAddr),
+				zap.Error(err))
+
 			errors <- err
 		}
 	})
+
+	wg.Wait()
+
+	for err := range errors {
+		return err
+	}
+
+	return nil
 }
 
 func (a *App) Close(ctx context.Context) error {
