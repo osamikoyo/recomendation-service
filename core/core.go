@@ -27,7 +27,7 @@ type Core struct {
 
 func NewCore(repo Repository, timeout time.Duration) *Core {
 	return &Core{
-		repo: repo,
+		repo:    repo,
 		timeout: timeout,
 	}
 }
