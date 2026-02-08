@@ -16,10 +16,10 @@ type DBConfig struct {
 }
 
 type Config struct {
-	Addr        string   `mapstructure:"addr"        yaml:"addr"`
-	MetricsAddr string   `mapstructure:"metrics_addr" yaml:"metrics_addr"`
-	DB          DBConfig `mapstructure:"db"          yaml:"db"`
-	Timeout     time.Duration   `mapstructure:"timeout" yaml:"timeout"`
+	Addr        string        `mapstructure:"addr"        yaml:"addr"`
+	MetricsAddr string        `mapstructure:"metrics_addr" yaml:"metrics_addr"`
+	DB          DBConfig      `mapstructure:"db"          yaml:"db"`
+	Timeout     time.Duration `mapstructure:"timeout" yaml:"timeout"`
 }
 
 func LoadConfig(path string) (*Config, error) {
