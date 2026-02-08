@@ -21,7 +21,7 @@ type Server struct {
 
 func NewServer(core *core.Core, logger *logger.Logger) *Server {
 	return &Server{
-		core: core,
+		core:   core,
 		logger: logger,
 	}
 }
