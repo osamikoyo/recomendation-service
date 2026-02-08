@@ -1,0 +1,10 @@
+version : 3
+
+tasks:
+  build:
+    cmds:
+      - go build -o rec-service cmd/rec-service/main.go
+  run:
+    cmds:
+      - task build
+      - ./rec-service
